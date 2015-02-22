@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript">
+        /* This function uses ajax to output the 10 words closest to the search term on keystroke
+        */
+        $(document).ready(function () {
+
+
+
+            $(function () {
+                $('#start').click(function () {
+                    $.ajax({
+
+                        type: "POST",
+                        url: "index.asmx/startCrawl",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                          //  $("#results").html(msg.d).show();
+                        }
+                    });
+                });
+
+            });
+
+
+            $(function () {
+                $('#stop').click(function () {
+                    $.ajax({
+
+                        type: "POST",
+                        url: "index.asmx/stopCrawl",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                        }
+                    });
+                });
+
+            });
+
+
+            $(function () {
+                $('#queue').click(function () {
+                    $.ajax({
+
+                        type: "POST",
+                        url: "index.asmx/getQueueCount",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            $("#results").html(msg.d).show();
+                        }
+                    });
+                });
+
+            });
+
+            
+
+        });
+    </script>
+
+</head>
+<body>
+    <button id="start" type="button" onclick="startFunction()">Start</button><br />
+    <button id="stop" type="button" onclick="stopFunction()">Stop</button><br />
+    <button id="queue" type="button" onclick="sizeFunction()">Queue Size</button>
+    <div id="results"></div>
+
+
+</body>
+</html>
