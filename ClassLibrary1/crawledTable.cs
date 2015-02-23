@@ -14,10 +14,10 @@ namespace ClassLibrary1
     public class crawledTable : TableEntity
     {
 
-        public crawledTable(string value, string url, string title, string date, string error, string lastten)
+        public crawledTable(string value, string url, string title, string date, string error, string lastten, string rowkey)
         {
             this.PartitionKey = value;
-            this.RowKey = url;
+            this.RowKey = rowkey;
             this.url = url;
             this.title = title;
             this.date = date;

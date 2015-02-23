@@ -109,13 +109,13 @@ namespace WebRole1
             List<String> noRobots = new List<String>();
             HashSet<String> allHtml = new HashSet<String>();
             var wc = new WebClient();
-            String robot = "http://bleacherreport.com/robots.txt";
+            String robot = "http://www.cnn.com/robots.txt";
             int count = 0;
             List<String> yesRobots = new List<String>();
             getReference g = new getReference();
             CloudQueue queue = g.getQueue();
-            for (int i = 0; i < 2; i++)
-            {
+         /*   for (int i = 0; i < 2; i++)
+            {*/
                 using (var sourceStream = wc.OpenRead(robot))
                 {
                     using (var reader = new StreamReader(sourceStream))
@@ -146,11 +146,11 @@ namespace WebRole1
 
                                     if (robot.Contains("bleacher"))
                                     {
-                                        newUrl = "http://bleacherreport.com" + newUrl;
+                                        newUrl = "http://bleacherreport.com" + newUrl + "/";
                                     }
                                     else
                                     {
-                                        newUrl = "http://cnn.com" + newUrl;
+                                        newUrl = "http://cnn.com" + newUrl + "/";
                                     }
 
                                     noRobots.Add(newUrl);
@@ -160,8 +160,8 @@ namespace WebRole1
                     }
                 }
                 count++;
-                robot = "http://www.cnn.com/robots.txt";
-            }
+           //     robot = "http://www.cnn.com/robots.txt";
+          //  }
             allHtml = getAllHtml(yesRobots);
           crawlerUrls(allHtml, noRobots);
         }
@@ -214,59 +214,48 @@ namespace WebRole1
             int count = 0;
             while (0 < limitCount)
             {
-                String html = "";
                 CloudQueueMessage retrievedMessage = queue.GetMessage();
                 try
                 {
                     if (retrievedMessage != null)
                     {
-                        using (WebClient webClient = new WebClient())
-                        {
-                            webClient.Encoding = Encoding.UTF8;
-                            html = webClient.DownloadString(retrievedMessage.AsString);
-                        }
-                        MatchCollection links = Regex.Matches(html, @"<a href=""\s*(.+?)\s*""", RegexOptions.Singleline);
-                        Match title1 = Regex.Match(html, @"<title>\s*(.+?)\s*</title>");
-                        Match date1 = Regex.Match(html, @"<meta content=""\s*(.+?)\s*"" itemprop=""dateCreated");
-
-
+                        HtmlWeb web = new HtmlWeb();
+                        HtmlDocument document = web.Load(retrievedMessage.AsString);
                         String title = "";
+                        HtmlNode node = document.DocumentNode.SelectSingleNode("//title");
+                        if (node != null)
+                        {
+                            HtmlAttribute desc;
+                            desc = node.Attributes["content"];
+                            title = node.InnerHtml;
+                        }
+
+                        HtmlNode dateNode = document.DocumentNode.SelectSingleNode("//meta[(@itemprop='dateCreated')]");
                         String date = "";
-
-                        if (title1 != null || title1.Length > 0)
+                        if (dateNode != null)
                         {
-                            title = title1.Groups[1].Value;
-                        }
-                        if (date1 != null || date1.Length > 0)
-                        {
-                            date = date1.Groups[1].Value;
-                        }
-
-                        if (lastten.Count < 11)
-                        {
-                            lastten.Add(retrievedMessage.AsString);
-                        }
-                        else
-                        {
-                            lastten.RemoveAt(0);
+                            date = dateNode.GetAttributeValue("content", "");
                         }
 
                         String tenUrls = "";
-                        if (lastten.Count == 10)
+                        lastten.Add(retrievedMessage.AsString);
+                        if (lastten.Count == 11)
                         {
-                            tenUrls = String.Join(",",lastten);
+                            lastten.RemoveAt(0);
+                            tenUrls = String.Join(",", lastten);
                         }
+                        
 
                         queue.DeleteMessage(retrievedMessage);
 
                         String encodeUrl = EncodeUrlInKey(retrievedMessage.AsString);
                         
-                        crawledTable ct = new crawledTable("index", encodeUrl, title, date, "no error", tenUrls);
-                        //crawledTable dashboard = new crawledTable("Dashboard", retrievedMessage.AsString, "No Title", "No date", null, lastten);
+                        crawledTable ct = new crawledTable("index", retrievedMessage.AsString, null, date, null, null, encodeUrl);
+                        crawledTable dashboard = new crawledTable("dash", retrievedMessage.AsString, title, date, "DASHBOARD", tenUrls, "rowkey");
                         TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
-                        //TableOperation insertOrReplaceOperation1 = TableOperation.InsertOrReplace(dashboard);
+                        TableOperation insertOrReplaceOperation1 = TableOperation.InsertOrReplace(dashboard);
                         table.Execute(insertOrReplaceOperation);
-                        //table.Execute(insertOrReplaceOperation1);
+                        table.Execute(insertOrReplaceOperation1);
 
 
                         String root = "";
@@ -280,24 +269,26 @@ namespace WebRole1
                             root = "cnn.com";
                         }
 
-                        int test = links.Count;
-                        foreach (Match m in links)
+                        var rows= document.DocumentNode.SelectNodes("//a[@href]");
+                        if (rows != null && rows.Count > 0)
                         {
-                            count++;
-                            String url = m.Groups[1].Value;
-                            if (url.StartsWith("//"))
+                            foreach (var link in rows)
                             {
-                                url = "http:" + url;
-                            }
-                            else if (url.StartsWith("/"))
-                            {
-                                url = "http://" + root + url;
-                            }
-                            if (!urlList.Contains(url) && !noRobots.Contains(url) && (url.Contains(root + "/")))
-                            {
-                                urlList.Add(url);
-                                CloudQueueMessage message = new CloudQueueMessage(url);
-                                queue.AddMessageAsync(message);
+                                String url = link.Attributes["href"].Value;
+                                if (url.StartsWith("//"))
+                                {
+                                    url = "http:" + url;
+                                }
+                                else if (url.StartsWith("/"))
+                                {
+                                    url = "http://" + root + url;
+                                }
+                                if (!urlList.Contains(url) && !noRobots.Contains(url) && (url.Contains(root + "/")))
+                                {
+                                    urlList.Add(url);
+                                    CloudQueueMessage message = new CloudQueueMessage(url);
+                                    queue.AddMessageAsync(message);
+                                }
                             }
                         }
                         queue.FetchAttributes();
@@ -307,7 +298,7 @@ namespace WebRole1
                 catch (WebException e)
                 {
                     queue.DeleteMessage(retrievedMessage);
-                    crawledTable ct = new crawledTable("Dashboard", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null);
+                    crawledTable ct = new crawledTable("error", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null, "error url");
                     TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
                     table.Execute(insertOrReplaceOperation);
                 }
