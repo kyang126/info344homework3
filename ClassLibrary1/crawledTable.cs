@@ -14,7 +14,7 @@ namespace ClassLibrary1
     public class crawledTable : TableEntity
     {
 
-        public crawledTable(string value, string url, string title, string date, string error, string lastten, string rowkey)
+        public crawledTable(string value, string url, string title, string date, string error, string lastten, string rowkey, int tableSize)
         {
             this.PartitionKey = value;
             this.RowKey = rowkey;
@@ -23,9 +23,12 @@ namespace ClassLibrary1
             this.date = date;
             this.lastten = lastten;
             this.error = error;
+            this.tableSize = tableSize;
         }
 
         public crawledTable() { }
+
+        public int tableSize { get; set; }
 
         public string url { get; set; }
         public string error { get; set; }

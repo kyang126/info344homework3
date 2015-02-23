@@ -16,6 +16,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using ClassLibrary1;
 using System.Text;
+using HtmlAgilityPack;
 
 namespace WorkerRole1
 {
@@ -27,41 +28,32 @@ namespace WorkerRole1
         public override void Run()
         {
             Trace.TraceInformation("WorkerRole1 is running");
-
-            try
-            {
+            try {
+                getReference g = new getReference();
+                CloudQueue cmd = g.commandQueue();
+                cmd.CreateIfNotExists();
                 while (true)
                 {
-                    getReference g = new getReference();
-                    CloudQueue queue = g.commandQueue();
-                    queue.CreateIfNotExists();
-                    CloudQueueMessage retrievedMessage = queue.GetMessage();
-
+                    CloudQueueMessage retrievedMessage = cmd.GetMessage();
                     if (retrievedMessage != null && retrievedMessage.AsString.Equals("start"))
                     {
-                        queue.DeleteMessage(retrievedMessage);
+                        cmd.DeleteMessage(retrievedMessage);
                         crawlRobots();
                     }
-
                     else if (retrievedMessage != null && retrievedMessage.AsString.Equals("stop"))
                     {
-                        queue.DeleteMessage(retrievedMessage);
+                        cmd.DeleteMessage(retrievedMessage);
                         break;
                     }
-
                 }
-
-
                 Thread.Sleep(50);
-
-                //this.RunAsync(this.cancellationTokenSource.Token).Wait();
+                this.RunAsync(this.cancellationTokenSource.Token).Wait();
             }
             finally
             {
                 this.runCompleteEvent.Set();
             }
         }
-
 
         public void crawlRobots()
         {
@@ -105,11 +97,11 @@ namespace WorkerRole1
 
                                     if (robot.Contains("bleacher"))
                                     {
-                                        newUrl = "http://bleacherreport.com" + newUrl;
+                                        newUrl = "http://bleacherreport.com" + newUrl + "/";
                                     }
                                     else
                                     {
-                                        newUrl = "http://cnn.com" + newUrl;
+                                        newUrl = "http://cnn.com" + newUrl + "/";
                                     }
 
                                     noRobots.Add(newUrl);
@@ -152,13 +144,13 @@ namespace WorkerRole1
                         queue.AddMessageAsync(message);
                         htmlList.Add(url);
                     }
-
                 }
                 count++;
             }
             return htmlList;
         }
-       public void crawlerUrls(HashSet<String> duplicateList, List<String> noRobots)
+
+        public void crawlerUrls(HashSet<String> duplicateList, List<String> noRobots)
         {
             HashSet<String> urlList = duplicateList;
             List<String> lastten = new List<String>();
@@ -168,36 +160,32 @@ namespace WorkerRole1
             CloudQueue cmd = g.commandQueue();
             queue.FetchAttributes();
             var limitCount = queue.ApproximateMessageCount.Value;
-            int count = 0;
+            int tableSize = 0;
             while (0 < limitCount)
             {
-                String html = "";
                 CloudQueueMessage retrievedMessage = queue.GetMessage();
                 try
                 {
                     if (retrievedMessage != null)
                     {
-                        using (WebClient webClient = new WebClient())
-                        {
-                            webClient.Encoding = Encoding.UTF8;
-                            html = webClient.DownloadString(retrievedMessage.AsString);
-                        }
-                        MatchCollection links = Regex.Matches(html, @"<a href=""\s*(.+?)\s*""", RegexOptions.Singleline);
-                        Match title1 = Regex.Match(html, @"<title>\s*(.+?)\s*</title>");
-                        Match date1 = Regex.Match(html, @"<meta content=""\s*(.+?)\s*"" itemprop=""dateCreated");
-
-
+                        HtmlWeb web = new HtmlWeb();
+                        HtmlDocument document = web.Load(retrievedMessage.AsString);
                         String title = "";
-                        String date = "";
+                        HtmlNode node = document.DocumentNode.SelectSingleNode("//title");
+                        if (node != null)
+                        {
+                            HtmlAttribute desc;
+                            desc = node.Attributes["content"];
+                            title = node.InnerHtml;
+                        }
 
-                        if (title1 != null || title1.Length > 0)
+                        HtmlNode dateNode = document.DocumentNode.SelectSingleNode("//meta[(@itemprop='dateCreated')]");
+                        String date = "";
+                        if (dateNode != null)
                         {
-                            title = title1.Groups[1].Value;
+                            date = dateNode.GetAttributeValue("content", "");
                         }
-                        if (date1 != null || date1.Length > 0)
-                        {
-                            date = date1.Groups[1].Value;
-                        }
+
                         String tenUrls = "";
                         lastten.Add(retrievedMessage.AsString);
                         if (lastten.Count == 11)
@@ -206,20 +194,18 @@ namespace WorkerRole1
                             tenUrls = String.Join(",", lastten);
                         }
 
-
-
-
                         queue.DeleteMessage(retrievedMessage);
 
                         String encodeUrl = EncodeUrlInKey(retrievedMessage.AsString);
 
-                        crawledTable ct = new crawledTable("index", retrievedMessage.AsString, title, date, "no error", tenUrls, encodeUrl);
-                        crawledTable dashboard = new crawledTable("dash", retrievedMessage.AsString, title, date, "DASHBOARD", tenUrls, "rowkey");
+                        tableSize++;
+
+                        crawledTable ct = new crawledTable("index", retrievedMessage.AsString, null, date, null, null, encodeUrl, 0);
+                        crawledTable dashboard = new crawledTable("dash", retrievedMessage.AsString, title, date, "DASHBOARD", tenUrls, "rowkey", tableSize);
                         TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
                         TableOperation insertOrReplaceOperation1 = TableOperation.InsertOrReplace(dashboard);
                         table.Execute(insertOrReplaceOperation);
                         table.Execute(insertOrReplaceOperation1);
-
 
                         String root = "";
 
@@ -232,24 +218,26 @@ namespace WorkerRole1
                             root = "cnn.com";
                         }
 
-                        int test = links.Count;
-                        foreach (Match m in links)
+                        var rows = document.DocumentNode.SelectNodes("//a[@href]");
+                        if (rows != null && rows.Count > 0)
                         {
-                            count++;
-                            String url = m.Groups[1].Value;
-                            if (url.StartsWith("//"))
+                            foreach (var link in rows)
                             {
-                                url = "http:" + url;
-                            }
-                            else if (url.StartsWith("/"))
-                            {
-                                url = "http://" + root + url;
-                            }
-                            if (!urlList.Contains(url) && !noRobots.Contains(url) && (url.Contains(root + "/")))
-                            {
-                                urlList.Add(url);
-                                CloudQueueMessage message = new CloudQueueMessage(url);
-                                queue.AddMessageAsync(message);
+                                String url = link.Attributes["href"].Value;
+                                if (url.StartsWith("//"))
+                                {
+                                    url = "http:" + url;
+                                }
+                                else if (url.StartsWith("/"))
+                                {
+                                    url = "http://" + root + url;
+                                }
+                                if (!urlList.Contains(url) && !noRobots.Contains(url) && (url.Contains(root + "/")))
+                                {
+                                    urlList.Add(url);
+                                    CloudQueueMessage message = new CloudQueueMessage(url);
+                                    queue.AddMessageAsync(message);
+                                }
                             }
                         }
                         queue.FetchAttributes();
@@ -259,7 +247,7 @@ namespace WorkerRole1
                 catch (WebException e)
                 {
                     queue.DeleteMessage(retrievedMessage);
-                    crawledTable ct = new crawledTable("Dashboard", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null, null);
+                    crawledTable ct = new crawledTable("error", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null, "error url", 0);
                     TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
                     table.Execute(insertOrReplaceOperation);
                 }

@@ -8,14 +8,12 @@
         */
         $(document).ready(function () {
 
-
-
             $(function () {
                 $('#start').click(function () {
                     $.ajax({
 
                         type: "POST",
-                        url: "index.asmx/startCrawl",
+                        url: "dashboard.asmx/startCrawl",
                         data: "{}",
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
@@ -33,7 +31,7 @@
                     $.ajax({
 
                         type: "POST",
-                        url: "index.asmx/stopCrawl",
+                        url: "dashboard.asmx/stopCrawl",
                         data: "{}",
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
@@ -41,16 +39,14 @@
                         }
                     });
                 });
-
             });
 
 
             $(function () {
                 $('#queue').click(function () {
                     $.ajax({
-
                         type: "POST",
-                        url: "index.asmx/getQueueCount",
+                        url: "dashboard.asmx/getQueueCount",
                         data: "{}",
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
@@ -59,10 +55,105 @@
                         }
                     });
                 });
-
             });
 
-            
+
+            $(function () {
+                $('#cmdCount').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/getCmd",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            $("#cmdResults").html(msg.d).show();
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $('#table').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/tableSize",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            $("#tableResults").html(msg.d).show();
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $('#ten').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/lastten",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            var myData = msg.d;
+                            var suggest = "";
+                            for (var i = 0; i < myData.length; i++) {
+                                suggest += myData[i] + "<br/>";
+                            }
+                            $("#tenResults").html(suggest).show();
+                        }
+                    });
+                });
+            });
+
+
+            $(function () {
+                $('#clearQueue').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/clearQ",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $('#clearCMD').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/clearCmd",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                        }
+                    });
+                });
+            });
+
+
+
+            $(function () {
+                $('#clearTable').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/deleteTable",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                        }
+                    });
+                });
+            });
+
+
 
         });
     </script>
@@ -71,9 +162,17 @@
 <body>
     <button id="start" type="button" onclick="startFunction()">Start</button><br />
     <button id="stop" type="button" onclick="stopFunction()">Stop</button><br />
+    <button id="clearQueue" type="button" onclick="queueFunction()">Clear Queue</button><br />
+    <button id="clearCMD" type="button" onclick="cmdFunction()">Clear CMD</button><br />
+    <button id="clearTable" type="button" onclick="tableFunction()">Clear Table</button><br />
+    <button id="cmdCount" type="button" onclick="cmdCountFunction()">CMD Count</button><br />
+    <div id="cmdResults"></div>
     <button id="queue" type="button" onclick="sizeFunction()">Queue Size</button>
     <div id="results"></div>
-
+    <button id="table" type="button" onclick="tableFunction()">Table size</button>
+    <div id="tableResults"></div>
+    <button id="ten" type="button" onclick="tenFunction()">Last Ten</button>
+    <div id="tenResults"></div>
 
 </body>
 </html>

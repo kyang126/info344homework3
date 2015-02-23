@@ -114,8 +114,8 @@ namespace WebRole1
             List<String> yesRobots = new List<String>();
             getReference g = new getReference();
             CloudQueue queue = g.getQueue();
-         /*   for (int i = 0; i < 2; i++)
-            {*/
+          for (int i = 0; i < 2; i++)
+            {
                 using (var sourceStream = wc.OpenRead(robot))
                 {
                     using (var reader = new StreamReader(sourceStream))
@@ -160,8 +160,8 @@ namespace WebRole1
                     }
                 }
                 count++;
-           //     robot = "http://www.cnn.com/robots.txt";
-          //  }
+                robot = "http://www.cnn.com/robots.txt";
+            }
             allHtml = getAllHtml(yesRobots);
           crawlerUrls(allHtml, noRobots);
         }
@@ -193,7 +193,6 @@ namespace WebRole1
                         queue.AddMessageAsync(message);
                         htmlList.Add(url);
                     }
-
                 }
                 count++;
             }
@@ -250,8 +249,8 @@ namespace WebRole1
 
                         String encodeUrl = EncodeUrlInKey(retrievedMessage.AsString);
                         
-                        crawledTable ct = new crawledTable("index", retrievedMessage.AsString, null, date, null, null, encodeUrl);
-                        crawledTable dashboard = new crawledTable("dash", retrievedMessage.AsString, title, date, "DASHBOARD", tenUrls, "rowkey");
+                        crawledTable ct = new crawledTable("index", retrievedMessage.AsString, null, date, null, null, encodeUrl, 0);
+                        crawledTable dashboard = new crawledTable("dash", retrievedMessage.AsString, title, date, "DASHBOARD", tenUrls, "rowkey", 0);
                         TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
                         TableOperation insertOrReplaceOperation1 = TableOperation.InsertOrReplace(dashboard);
                         table.Execute(insertOrReplaceOperation);
@@ -298,7 +297,7 @@ namespace WebRole1
                 catch (WebException e)
                 {
                     queue.DeleteMessage(retrievedMessage);
-                    crawledTable ct = new crawledTable("error", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null, "error url");
+                    crawledTable ct = new crawledTable("error", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null, "error url", 0);
                     TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
                     table.Execute(insertOrReplaceOperation);
                 }
