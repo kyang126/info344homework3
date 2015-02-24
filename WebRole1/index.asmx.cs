@@ -249,8 +249,8 @@ namespace WebRole1
 
                         String encodeUrl = EncodeUrlInKey(retrievedMessage.AsString);
                         
-                        crawledTable ct = new crawledTable("index", retrievedMessage.AsString, null, date, null, null, encodeUrl, 0);
-                        crawledTable dashboard = new crawledTable("dash", retrievedMessage.AsString, title, date, "DASHBOARD", tenUrls, "rowkey", 0);
+                        cTable ct = new cTable("index", retrievedMessage.AsString, null, date, null, null, encodeUrl, 0);
+                        cTable dashboard = new cTable("dash", retrievedMessage.AsString, title, date, "DASHBOARD", tenUrls, "rowkey", 0);
                         TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
                         TableOperation insertOrReplaceOperation1 = TableOperation.InsertOrReplace(dashboard);
                         table.Execute(insertOrReplaceOperation);
@@ -297,7 +297,7 @@ namespace WebRole1
                 catch (WebException e)
                 {
                     queue.DeleteMessage(retrievedMessage);
-                    crawledTable ct = new crawledTable("error", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null, "error url", 0);
+                    cTable ct = new cTable("error", retrievedMessage.AsString, "No Title", "No date", e.Status.ToString(), null, "error url", 0);
                     TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(ct);
                     table.Execute(insertOrReplaceOperation);
                 }

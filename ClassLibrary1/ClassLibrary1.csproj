@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="cTable.cs" />
     <Compile Include="crawledTable.cs" />
     <Compile Include="getReference.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

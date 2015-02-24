@@ -9,6 +9,37 @@
         $(document).ready(function () {
 
             $(function () {
+                $('#searchButton').click(function () {
+                var searchTerm = $('#search').val().trim();
+                var w = {
+                    term: searchTerm
+                }
+              
+                //If the user has inputted into the text field
+                $.ajax({
+                    type: "POST",
+                    url: "dashboard.asmx/search",
+                    data: JSON.stringify(w),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) { //Call upon the list that holds all the words that are closest to the term and outputs it
+                        var myData = data.d;
+                        var suggest = "" + myData;
+                        alert(myData);
+                        // $("#searchResults").html(suggest).show();
+                    },
+                    error: function (msg) {
+                        alert(JSON.stringify(msg));
+                    }
+                });
+              });
+            })
+
+
+
+
+
+            $(function () {
                 $('#start').click(function () {
                     $.ajax({
 
@@ -89,6 +120,51 @@
             });
 
             $(function () {
+                $('#cpu').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/cpuSize",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            $("#cpuResults").html(msg.d).show();
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $('#ram').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/ramSize",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            $("#ramResults").html(msg.d).show();
+                        }
+                    });
+                });
+            });
+
+            $(function () {
+                $('#status').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/getStatus",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            $("#statusResults").html(msg.d).show();
+                        }
+                    });
+                });
+            });
+
+            $(function () {
                 $('#ten').click(function () {
                     $.ajax({
                         type: "POST",
@@ -108,6 +184,26 @@
                 });
             });
 
+
+            $(function () {
+                $('#errors').click(function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "dashboard.asmx/errors",
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (msg) {
+                            var myData = msg.d;
+                            var suggest = "";
+                            for (var i = 0; i < myData.length; i++) {
+                                suggest += myData[i] + "<br/>";
+                            }
+                            $("#errorResults").html(suggest).show();
+                        }
+                    });
+                });
+            });
 
             $(function () {
                 $('#clearQueue').click(function () {
@@ -160,6 +256,10 @@
 
 </head>
 <body>
+
+    <input class="search" type="text" >
+    <button id="searchButton" type="button" onclick="searchFunction()">Search</button>
+    <div id="searchResults"></div>
     <button id="start" type="button" onclick="startFunction()">Start</button><br />
     <button id="stop" type="button" onclick="stopFunction()">Stop</button><br />
     <button id="clearQueue" type="button" onclick="queueFunction()">Clear Queue</button><br />
@@ -171,8 +271,16 @@
     <div id="results"></div>
     <button id="table" type="button" onclick="tableFunction()">Table size</button>
     <div id="tableResults"></div>
+    <button id="cpu" type="button" onclick="cpuFunction()">CPU Size</button>
+    <div id="cpuResults"></div>
+    <button id="ram" type="button" onclick="ramFunction()">Ram Size</button>
+    <div id="ramResults"></div>
     <button id="ten" type="button" onclick="tenFunction()">Last Ten</button>
     <div id="tenResults"></div>
+    <button id="errors" type="button" onclick="errorFunction()">Errors</button>
+    <div id="errorResults"></div>
+    <button id="status" type="button" onclick="statusFunction()">Status</button>
+    <div id="statusResults"></div>
 
 </body>
 </html>

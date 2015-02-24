@@ -11,11 +11,10 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace ClassLibrary1
 {
-    public class crawledTable : TableEntity
+    public class cTable : TableEntity
     {
 
-        public crawledTable(string value, string url, string title, string date, string error, string lastten, string rowkey, int tableSize, 
-            string ram, string cpu, string status)
+        public cTable(string value, string url, string title, string date, string error, string lastten, string rowkey, int tableSize)
         {
             this.PartitionKey = value;
             this.RowKey = rowkey;
@@ -25,22 +24,13 @@ namespace ClassLibrary1
             this.lastten = lastten;
             this.error = error;
             this.tableSize = tableSize;
-            this.ram = ram;
-            this.cpu = cpu;
-            this.status = status;
         }
 
-        public crawledTable() { }
+        public cTable() { }
 
         public int tableSize { get; set; }
 
-        public string status { get; set; }
-
-        public string ram { get; set; }
-
         public string url { get; set; }
-
-        public string cpu { get; set; }
         public string error { get; set; }
 
         public string title { get; set; }
