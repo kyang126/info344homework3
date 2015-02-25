@@ -1,0 +1,23 @@
+﻿.canvas{
+width: 70%;
+	margin-left: auto;
+    margin-right: auto;
+	padding: 20px;
+    border: 1px solid #f0f0f0;
+    border-bottom: 2px solid #ccc;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+	box-shadow: 5px 5px 5px #191919;
+}
+
+.pure-g {
+    margin-top: 30px;
+}
+
+.searchDiv, .title, .pure-g{
+    margin-left: auto;
+    margin-right: auto;
+    display:block;
+    text-align:center;
+}

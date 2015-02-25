@@ -9,7 +9,6 @@
         $(document).ready(function () {
 
              $('#searchButton').click(function () {
-                alert("this is clicked");
                 var searchTerm = $('#searchText').val().trim();
                 var w = {
                     term: searchTerm
@@ -23,7 +22,6 @@
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: function (msg) { //Call upon the list that holds all the words that are closest to the term and outputs it
-                        alert(msg.d);
                         $("#searchResults").html(msg.d).show();
                     },
                     error: function (msg) {
@@ -31,7 +29,6 @@
                     }
 
                 });
-                alert("this is clicked part 2");
               });
 
             $(function () {
@@ -252,15 +249,15 @@
 </head>
 <body>
 
-    <input id="searchText" class="search" type="text" >
+    <input id="searchText" class="search" type="text">
     <button id="searchButton" type="button" onclick="searchFunction()">Search</button>
     <div id="searchResults"></div>
-    <button id="start" type="button" onclick="startFunction()">Start</button><br />
-    <button id="stop" type="button" onclick="stopFunction()">Stop</button><br />
-    <button id="clearQueue" type="button" onclick="queueFunction()">Clear Queue</button><br />
-    <button id="clearCMD" type="button" onclick="cmdFunction()">Clear CMD</button><br />
-    <button id="clearTable" type="button" onclick="tableFunction()">Clear Table</button><br />
-    <button id="cmdCount" type="button" onclick="cmdCountFunction()">CMD Count</button><br />
+    <button id="start" type="button" onclick="startFunction()">Start</button><br/>
+    <button id="stop" type="button" onclick="stopFunction()">Stop</button><br/>
+    <button id="clearQueue" type="button" onclick="queueFunction()">Clear Queue</button><br/>
+    <button id="clearCMD" type="button" onclick="cmdFunction()">Clear CMD</button><br/>
+    <button id="clearTable" type="button" onclick="tableFunction()">Clear Table</button><br/>
+    <button id="cmdCount" type="button" onclick="cmdCountFunction()">CMD Count</button><br/>
     <div id="cmdResults"></div>
     <button id="queue" type="button" onclick="sizeFunction()">Queue Size</button>
     <div id="results"></div>
@@ -276,6 +273,5 @@
     <div id="errorResults"></div>
     <button id="status" type="button" onclick="statusFunction()">Status</button>
     <div id="statusResults"></div>
-
 </body>
 </html>

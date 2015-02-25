@@ -267,7 +267,12 @@ namespace WorkerRole1
                 }
                 catch (Exception e)
                 {
-                    errorList.Add("Url: " + retrievedMessage.AsString + " problem is: " + e.Message);
+                    string errorMessage = "Url: " + retrievedMessage.AsString + " problem is: " + e.Message;
+                    if (!errorList.Contains(errorMessage))
+                    {
+                        errorList.Add(e.Message);
+                    }
+                    
                 }
                 queue.FetchAttributes();
                 limitCount = queue.ApproximateMessageCount.Value;

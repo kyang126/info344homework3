@@ -103,6 +103,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="styles.css" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
