@@ -71,10 +71,13 @@ namespace WebRole1
             // Execute the retrieve operation.
             TableResult retrievedResult = table.Execute(retrieveOperation);
             String value = ((crawledTable)retrievedResult.Result).lastten;
-            string[] values = value.Split(',');
-            for (int i = 0; i < values.Length; i++)
+            if (!String.IsNullOrEmpty(value) && value.Contains(','))
             {
-                t.Add(values[i]);
+                string[] values = value.Split(',');
+                for (int i = 0; i < values.Length; i++)
+                {
+                    t.Add(values[i]);
+                }
             }
                 return t;
         }
@@ -90,10 +93,13 @@ namespace WebRole1
             // Execute the retrieve operation.
             TableResult retrievedResult = table.Execute(retrieveOperation);
             String value = ((crawledTable)retrievedResult.Result).error;
-            string[] values = value.Split(',');
-            for (int i = 0; i < values.Length; i++)
+            if (!String.IsNullOrEmpty(value) && value.Contains(','))
             {
-                t.Add(values[i]);
+                string[] values = value.Split(',');
+                for (int i = 0; i < values.Length; i++)
+                {
+                    t.Add(values[i]);
+                }
             }
             return t;
         }

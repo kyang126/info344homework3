@@ -8,13 +8,13 @@
         */
         $(document).ready(function () {
 
-            $(function () {
-                $('#searchButton').click(function () {
-                var searchTerm = $('#search').val().trim();
+             $('#searchButton').click(function () {
+                alert("this is clicked");
+                var searchTerm = $('#searchText').val().trim();
                 var w = {
                     term: searchTerm
                 }
-              
+               // alert(searchTerm + " this has been clicked");
                 //If the user has inputted into the text field
                 $.ajax({
                     type: "POST",
@@ -22,22 +22,17 @@
                     data: JSON.stringify(w),
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
-                    success: function (data) { //Call upon the list that holds all the words that are closest to the term and outputs it
-                        var myData = data.d;
-                        var suggest = "" + myData;
-                        alert(myData);
-                        // $("#searchResults").html(suggest).show();
+                    success: function (msg) { //Call upon the list that holds all the words that are closest to the term and outputs it
+                        alert(msg.d);
+                        $("#searchResults").html(msg.d).show();
                     },
                     error: function (msg) {
                         alert(JSON.stringify(msg));
                     }
+
                 });
+                alert("this is clicked part 2");
               });
-            })
-
-
-
-
 
             $(function () {
                 $('#start').click(function () {
@@ -257,7 +252,7 @@
 </head>
 <body>
 
-    <input class="search" type="text" >
+    <input id="searchText" class="search" type="text" >
     <button id="searchButton" type="button" onclick="searchFunction()">Search</button>
     <div id="searchResults"></div>
     <button id="start" type="button" onclick="startFunction()">Start</button><br />
